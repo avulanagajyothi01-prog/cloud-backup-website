@@ -20,7 +20,14 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app)
+CORS(
+    app,
+    resources={
+        r"/api/*": {
+            "origins": "*"
+        }
+    }
+)
 
 
 # ==========================================
@@ -35,6 +42,16 @@ AZURE_CONTAINER_NAME = os.getenv(
     "AZURE_CONTAINER_NAME",
     "cloud-backup"
 )
+
+
+# ==========================================
+# CHECK AZURE CONNECTION STRING
+# ==========================================
+
+if not AZURE_CONNECTION_STRING:
+    raise ValueError(
+        "AZURE_STORAGE_CONNECTION_STRING is not set"
+    )
 
 
 # ==========================================
@@ -71,7 +88,6 @@ def upload_file():
 
     try:
 
-        # Check whether file exists
         if "file" not in request.files:
 
             return jsonify({
@@ -79,11 +95,8 @@ def upload_file():
                 "message": "No file selected"
             }), 400
 
-
         file = request.files["file"]
 
-
-        # Check filename
         if file.filename == "":
 
             return jsonify({
@@ -91,45 +104,30 @@ def upload_file():
                 "message": "Invalid filename"
             }), 400
 
-
-        # File name
         filename = file.filename
 
-
-        # Get blob client
         blob_client = container_client.get_blob_client(
             filename
         )
 
-
-        # Upload file to Azure
         blob_client.upload_blob(
             file,
             overwrite=True
         )
 
-
         return jsonify({
-
             "success": True,
-
             "message": "File uploaded successfully",
-
             "filename": filename
-
         })
-
 
     except Exception as e:
 
         print("UPLOAD ERROR:", e)
 
         return jsonify({
-
             "success": False,
-
             "message": str(e)
-
         }), 500
 
 
@@ -144,43 +142,29 @@ def get_files():
 
         files = []
 
-
         blobs = container_client.list_blobs()
-
 
         for blob in blobs:
 
             files.append({
-
                 "name": blob.name,
-
                 "size": blob.size,
-
                 "url":
-                    f"http://127.0.0.1:5000/api/download/{blob.name}"
-
+                    f"https://cloudBackupphotoswebsite.azurewebsites.net/api/download/{blob.name}"
             })
 
-
         return jsonify({
-
             "success": True,
-
             "files": files
-
         })
-
 
     except Exception as e:
 
         print("LIST ERROR:", e)
 
         return jsonify({
-
             "success": False,
-
             "message": str(e)
-
         }), 500
 
 
@@ -200,35 +184,23 @@ def download_file(filename):
             filename
         )
 
-
-        # Download blob from Azure
         download_stream = blob_client.download_blob()
-
 
         file_data = download_stream.readall()
 
-
         return send_file(
-
             io.BytesIO(file_data),
-
             download_name=filename,
-
             as_attachment=False
-
         )
-
 
     except Exception as e:
 
         print("DOWNLOAD ERROR:", e)
 
         return jsonify({
-
             "success": False,
-
             "message": "File not found"
-
         }), 404
 
 
@@ -248,30 +220,20 @@ def delete_file(filename):
             filename
         )
 
-
-        # Delete file from Azure
         blob_client.delete_blob()
 
-
         return jsonify({
-
             "success": True,
-
             "message": "File deleted successfully"
-
         })
-
 
     except Exception as e:
 
         print("DELETE ERROR:", e)
 
         return jsonify({
-
             "success": False,
-
             "message": "File could not be deleted"
-
         }), 404
 
 
@@ -282,11 +244,7 @@ def delete_file(filename):
 if __name__ == "__main__":
 
     app.run(
-
-        host="127.0.0.1",
-
+        host="0.0.0.0",
         port=5000,
-
         debug=True
-
     )
