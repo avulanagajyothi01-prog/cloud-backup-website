@@ -2,7 +2,8 @@ const fileInput = document.getElementById("fileInput");
 const selectedFile = document.getElementById("selectedFile");
 const uploadStatus = document.getElementById("uploadStatus");
 const fileList = document.getElementById("fileList");
-
+const API_BASE_URL =
+    "https://cloudbackupphotoswebsite-c5ftd2dkccathaeu.eastasia-01.azurewebsites.net";
 console.log("script.js loaded");
 
 
