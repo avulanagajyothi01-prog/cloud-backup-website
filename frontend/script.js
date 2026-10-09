@@ -2,9 +2,10 @@ const fileInput = document.getElementById("fileInput");
 const selectedFile = document.getElementById("selectedFile");
 const uploadStatus = document.getElementById("uploadStatus");
 const fileList = document.getElementById("fileList");
+
+// Azure Backend URL
 const API_BASE_URL =
     "https://cloudbackupphotoswebsite-c5ftd2dkccathaeu.eastasia-01.azurewebsites.net";
-console.log("script.js loaded");
 
 
 // ==========================================
@@ -54,7 +55,7 @@ async function uploadFile() {
     try {
 
         const response = await fetch(
-            "http://127.0.0.1:5000/api/upload",
+            `${API_BASE_URL}/api/upload`,
             {
                 method: "POST",
                 body: formData
@@ -118,7 +119,7 @@ async function loadFiles() {
     try {
 
         const response = await fetch(
-            "http://127.0.0.1:5000/api/files"
+            `${API_BASE_URL}/api/files`
         );
 
         const result = await response.json();
@@ -164,7 +165,7 @@ async function loadFiles() {
                 </p>
 
                 <a
-                    href="${file.url}"
+                    href="${API_BASE_URL}/api/download/${encodeURIComponent(file.name)}"
                     target="_blank">
 
                     👁️ View / Download
@@ -227,7 +228,7 @@ async function deleteFile(filename) {
     try {
 
         const response = await fetch(
-            "http://127.0.0.1:5000/api/delete/" +
+            `${API_BASE_URL}/api/delete/` +
             encodeURIComponent(filename),
             {
                 method: "DELETE"
